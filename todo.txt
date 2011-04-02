@@ -1,0 +1,1 @@
+add in vcr - need to port vcr to work with em-http-request 1.0.0.beta

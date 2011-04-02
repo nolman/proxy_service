@@ -13,4 +13,42 @@ describe XmlAsJsonProxy do
     end
   end
 
+  it 'follow one redirect' do
+    with_api(XmlAsJsonProxy) do
+      get_request({:query => {:url => 'http://google.com/', 'mapping[q]' => "title"}}, err) do |req|
+        data = Yajl::Parser.parse(req.response)
+        data['q'].should == "Google"
+      end
+    end
+  end
+
+  it "should forward a parsed request on and return that responses data" do
+    with_api(XmlAsJsonProxy) do
+      get_request({:query => {:url => 'https://github.com', :forward_to => 'http://www.google.com/search', 'mapping[q]' => "title"}}, err) do |req|
+        doc = Nokogiri(req.response)
+        req.response_header.keys.should include("CACHE_CONTROL")
+        doc.at("title").inner_html.should include("GitHub - Google Search")
+      end
+    end
+  end
+
+  it "should preserve query params in original url" do
+    with_api(XmlAsJsonProxy) do
+      get_request({:query => {:url => 'https://github.com', :forward_to => 'http://www.google.com/search?q=foo', 'mapping[bar]' => "title"}}, err) do |req|
+        doc = Nokogiri(req.response)
+        doc.at("title").inner_html.should include("foo - Google Search")
+      end
+    end
+  end
+
+  it "should follow one redirect in the forward to url" do
+    with_api(XmlAsJsonProxy) do
+      get_request({:query => {:url => 'https://github.com', :forward_to => 'http://google.com/search', 'mapping[q]' => "title"}}, err) do |req|
+        doc = Nokogiri(req.response)
+        doc.at("title").inner_html.should_not include("301")
+        doc.at("title").inner_html.should include("GitHub - Google Search")
+      end
+    end
+  end
+
 end

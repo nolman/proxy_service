@@ -28,4 +28,5 @@ describe RequestProxy do
       end
     end
   end
+
 end
