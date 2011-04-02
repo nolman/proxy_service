@@ -3,6 +3,7 @@ require 'em-synchrony/em-http'
 require 'nokogiri'
 
 class XmlAsJsonProxy < Goliath::API
+  include ForwardingSupport
   use Goliath::Rack::Params             # parse query & body params
   use Goliath::Rack::Formatters::JSON   # JSON output formatter
   use Goliath::Rack::Render             # auto-negotiate response format
@@ -15,17 +16,6 @@ class XmlAsJsonProxy < Goliath::API
     document = Nokogiri(http.response)
     logger.info "Received #{http.response_header.status} from #{nested_params['url']}"
     render_with_forward_to_support(200, {'X-Goliath' => 'Proxy', 'Content-Type' => 'application/json'}, mapping_to_json(nested_params['mapping'], document))
-  end
-
-  def render_with_forward_to_support(code, headers, body)
-    if params['forward_to']
-      uri = Addressable::URI.parse(params['forward_to'])
-      uri.query_values = (uri.query_values || {}).merge(body)
-      http = EM::HttpRequest.new(uri).get(:redirects => 1)
-      [200, http.response_header, http.response]
-    else
-      [code, headers, body]
-    end
   end
 
   def mapping_to_json(mapping, document)
