@@ -1,5 +1,5 @@
 require 'spec_helper'
-require File.join(File.dirname(__FILE__), '..', 'proxy_server')
+require File.expand_path(File.join(File.dirname(__FILE__), '..', 'lib', 'proxy_server'))
 
 describe RequestProxy do
   let(:err) { Proc.new { fail "API request failed" } }
