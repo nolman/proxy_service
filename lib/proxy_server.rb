@@ -1,4 +1,4 @@
-require File.expand_path(File.join(File.dirname(__FILE__), 'forwarding_support'))
+require 'goliath'
 require File.expand_path(File.join(File.dirname(__FILE__), 'request_proxy'))
 require File.expand_path(File.join(File.dirname(__FILE__), 'xml_as_json_proxy'))
 

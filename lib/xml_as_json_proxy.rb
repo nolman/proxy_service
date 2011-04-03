@@ -1,4 +1,5 @@
 require 'goliath'
+require File.expand_path(File.join(File.dirname(__FILE__), 'forwarding_support'))
 require 'em-synchrony/em-http'
 require 'nokogiri'
 
