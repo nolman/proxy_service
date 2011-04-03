@@ -23,6 +23,8 @@ class XmlAsJsonProxy < Goliath::API
       mapping.each do |key, value|
         if value.is_a?(Hash)
           result[key] = mapping_to_json(value, document)
+        elsif value.is_a?(Array)
+          result[key] = document.search(value.first).map{|element| element.inner_html }
         else
           result[key] = document.at(value).inner_html
         end

@@ -13,6 +13,15 @@ describe XmlAsJsonProxy do
     end
   end
 
+  it 'convert the xml to an array json representation' do
+    with_api(XmlAsJsonProxy) do
+      get_request({:query => {:url => 'http://github.com/api/v2/xml/user/show/nolman', 'mapping[user][login][]' => '//login'}}, err) do |req|
+        data = Yajl::Parser.parse(req.response)
+        data['user']['login'].should == ['nolman']
+      end
+    end
+  end
+
   it 'follow one redirect' do
     with_api(XmlAsJsonProxy) do
       get_request({:query => {:url => 'http://google.com/', 'mapping[q]' => "title"}}, err) do |req|
