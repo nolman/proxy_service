@@ -2,6 +2,7 @@ No JSON/JSONP? No problem.  This is a simple async server written using goliath.
 
 # all anchor tags
 # {:a => [{:xpath => '//a', :attr => 'href'}]}
+
 # first anchor tag
 # {:a => {:xpath => '//login', :attr => 'type'}}
 # first anchor tag
