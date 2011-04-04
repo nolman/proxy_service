@@ -16,20 +16,46 @@ class XmlAsJsonProxy < Goliath::API
     nested_params = ::Rack::Utils.parse_nested_query(env['QUERY_STRING'])
     document = Nokogiri(http.response)
     logger.info "Received #{http.response_header.status} from #{nested_params['url']}"
-    render_with_forward_to_support(200, {'X-Goliath' => 'Proxy', 'Content-Type' => 'application/json'}, mapping_to_json(nested_params['mapping'], document))
+    render_with_forward_to_support(200, {'X-Goliath' => 'Proxy', 'Content-Type' => 'application/json'}, mapping_to_json(document, nested_params['mapping']))
   end
 
-  def mapping_to_json(mapping, document)
+  def mapping_to_json(document, mapping)
     {}.tap do |result|
-      mapping.each do |key, value|
-        if value.is_a?(Hash)
-          result[key] = mapping_to_json(value, document)
-        elsif value.is_a?(Array)
-          result[key] = document.search(value.first).map{|element| element.inner_html }
-        else
-          result[key] = document.at(value).inner_html
-        end
+      mapping.each do |key, locator|
+        result[key] = value_for(document, normalize_locator(locator))
       end
     end
   end
+
+  def normalize_locator(locator)
+    if locator.is_a?(Hash)
+      locator
+    elsif locator.is_a?(Array) && locator.first.is_a?(Hash)
+      locator
+    elsif locator.is_a?(Array) && !locator.first.is_a?(Hash)
+      [{'path' => locator.first}]
+    else
+      {'path' => locator}
+    end
+  end
+
+  def value_for(document, locator)
+    if locator.is_a?(Array)
+      locator = locator.first
+      elements = document.search(locator['path'])
+      elements.map {|element| get_value_for(element, locator) }
+    else
+      element = document.at(locator['path'])
+      get_value_for(element, locator)
+    end
+  end
+
+  def get_value_for(element, locator)
+    if locator['attr'].to_s == ""
+      element.inner_html
+    else
+      element[locator['attr']]
+    end
+  end
+
 end

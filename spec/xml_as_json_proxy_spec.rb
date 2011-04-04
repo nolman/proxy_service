@@ -6,18 +6,51 @@ describe XmlAsJsonProxy do
 
   it 'convert the xml to a json representation' do
     with_api(XmlAsJsonProxy) do
-      get_request({:query => {:url => 'http://github.com/api/v2/xml/user/show/nolman', 'mapping[user][login]' => '//login'}}, err) do |req|
+      get_request({:query => {:url => 'http://github.com/api/v2/xml/user/show/nolman', 'mapping[user_login]' => '//login'}}, err) do |req|
         data = Yajl::Parser.parse(req.response)
-        data['user']['login'].should == 'nolman'
+        data['user_login'].should == 'nolman'
+      end
+    end
+  end
+
+  it 'convert the xml inner text to a json representation if attr is blank' do
+    with_api(XmlAsJsonProxy) do
+      get_request({:query => {:url => 'http://github.com/api/v2/xml/user/show/nolman', 
+                                    'mapping[user_login][path]' => '//login',
+                                    'mapping[user_login][attr]' => ''}}, err) do |req|
+        data = Yajl::Parser.parse(req.response)
+        data['user_login'].should == 'nolman'
+      end
+    end
+  end
+
+  it "convert xml attrs to a json representation" do
+    with_api(XmlAsJsonProxy) do
+      get_request({:query => {:url => 'http://github.com/api/v2/xml/user/show/nolman', 
+                                    'mapping[following-count-type][path]' => '//following-count', 
+                                    'mapping[following-count-type][attr]' => 'type'}}, err) do |req|
+        data = Yajl::Parser.parse(req.response)
+        data['following-count-type'].should == 'integer'
+      end
+    end
+  end
+
+  it "convert xml attrs to an array json representation" do
+    with_api(XmlAsJsonProxy) do
+      get_request({:query => {:url => 'http://github.com/api/v2/xml/user/show/nolman', 
+                                    'mapping[following-count-type][][path]' => '//following-count', 
+                                    'mapping[following-count-type][][attr]' => 'type'}}, err) do |req|
+        data = Yajl::Parser.parse(req.response)
+        data['following-count-type'].should == ['integer']
       end
     end
   end
 
   it 'convert the xml to an array json representation' do
     with_api(XmlAsJsonProxy) do
-      get_request({:query => {:url => 'http://github.com/api/v2/xml/user/show/nolman', 'mapping[user][login][]' => '//login'}}, err) do |req|
+      get_request({:query => {:url => 'http://github.com/api/v2/xml/user/show/nolman', 'mapping[user_login][]' => '//login'}}, err) do |req|
         data = Yajl::Parser.parse(req.response)
-        data['user']['login'].should == ['nolman']
+        data['user_login'].should == ['nolman']
       end
     end
   end
