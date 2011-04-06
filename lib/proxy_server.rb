@@ -3,6 +3,7 @@ require File.expand_path(File.join(File.dirname(__FILE__), 'request_proxy'))
 require File.expand_path(File.join(File.dirname(__FILE__), 'xml_as_json_proxy'))
 
 class ProxyServer < Goliath::API
+  use ForwardingSupport
   use Goliath::Rack::Params             # parse query & body params
   use Goliath::Rack::Formatters::JSON   # JSON output formatter
   use Goliath::Rack::Render             # auto-negotiate response format

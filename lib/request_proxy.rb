@@ -3,7 +3,7 @@ require File.expand_path(File.join(File.dirname(__FILE__), 'forwarding_support')
 require 'em-synchrony/em-http'
 
 class RequestProxy < Goliath::API
-  include ForwardingSupport
+  use ForwardingSupport
   use Goliath::Rack::Params             # parse query & body params
   use Goliath::Rack::Formatters::JSON   # JSON output formatter
   use Goliath::Rack::Render             # auto-negotiate response format
@@ -13,6 +13,6 @@ class RequestProxy < Goliath::API
   def response(env)
     http = EM::HttpRequest.new(params['url']).get(:redirects => 1)
     logger.info "Received #{http.response_header.status} from #{params['url']}"
-    with_forward_to_support(200, http.response_header, http.response)
+    [200, http.response_header, http.response]
   end
 end
